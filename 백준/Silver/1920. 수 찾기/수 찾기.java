@@ -42,8 +42,8 @@ public class Main {
 				}
 			}
 		}
-		for (int i = 0; i < M; i++) {
-			System.out.println(count[i]);
+		for (int i : count) {
+			System.out.println(i);
 		}
 	}
 }
