@@ -3,6 +3,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class Main {
+	static StringBuilder sb;
+
 	static class Node {
 		int num;
 		Node left, right;
@@ -45,7 +47,9 @@ public class Main {
 				break;
 			root.add(Integer.parseInt(input));
 		}
+		sb = new StringBuilder();
 		postOrder(root);
+		System.out.println(sb);
 	}
 
 	private static void postOrder(Node node) {
@@ -54,6 +58,6 @@ public class Main {
 		}
 		postOrder(node.left);
 		postOrder(node.right);
-		System.out.println(node.num);
+		sb.append(node.num).append("\n");
 	}
 }
