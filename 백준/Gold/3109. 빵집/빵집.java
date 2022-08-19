@@ -9,7 +9,6 @@ public class Main {
 
 	static int n, m, Ans;
 	static char[][] map; // 집 정보를 담을 배열
-	static boolean[][] visited;
 
 	public static void main(String[] args) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -21,7 +20,6 @@ public class Main {
 		for (int i = 0; i < n; i++) {
 			map[i] = br.readLine().trim().toCharArray();
 		}
-		visited = new boolean[n][m];
 		for (int i = 0; i < n; i++) {
 			if (check(new Point(i, 0)))
 				Ans++;
@@ -34,14 +32,14 @@ public class Main {
 	static int[] dy = { 1, 1, 1 };
 
 	static boolean check(Point start) {
-		visited[start.x][start.y] = true;
+		map[start.x][start.y] = 'x';
 		if (start.y == m - 1) {
 			return true;
 		}
 		for (int d = 0; d < 3; d++) {
 			Point next = new Point(start.x + dx[d], start.y + dy[d]);
 			if (next.x >= 0 && next.x < n && next.y < m && map[next.x][next.y] == '.') {
-				if (!visited[next.x][next.y] && check(next))
+				if (check(next))
 					return true;
 			}
 		}
