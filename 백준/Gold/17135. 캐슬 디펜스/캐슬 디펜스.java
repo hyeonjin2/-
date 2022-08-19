@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 public class Main {
 
 	static int N, M, D, Cnt, cntTotal, cntKill, answer;
+	static int tmpN;
 	static List<Enemy>[] enemy;
 	static int[][] map, game;
 	static int[] selected; // 조합으로 뽑인 궁수들의 인덱스
@@ -66,8 +67,10 @@ public class Main {
 			}
 			cntTotal = Cnt;
 			cntKill = 0;
-			while (cntTotal > 0) {
+			tmpN = N;
+			while (cntTotal > 0 && tmpN > 0) {
 				calc();
+				tmpN--;
 			}
 			answer = Math.max(answer, cntKill);
 			return;
@@ -83,10 +86,10 @@ public class Main {
 		enemy = new ArrayList[3];
 		for (int k = 0; k < 3; k++) {
 			// 궁수의 위치 point 배열에 저장
-			Point archer = new Point(N, selected[k]);
+			Point archer = new Point(tmpN, selected[k]);
 			// 적과의 거리 계산 후 공격할 수 있는 범위의 적 배열에 저장
 			enemy[k] = new ArrayList<Enemy>();
-			for (int i = 0; i < N; i++) {
+			for (int i = 0; i < tmpN; i++) {
 				for (int j = 0; j < M; j++) {
 					// 배열의 값이 1이면 -> 적이 있으면
 					if (game[i][j] == 1) { // 궁수과의 거리 계산
@@ -127,27 +130,6 @@ public class Main {
 			game[e.x][e.y] = 0;
 			cntKill++;
 			cntTotal--;
-		}
-
-		// 적들 아래로 한칸 옮기기
-		move();
-
-	}
-
-	// map 배열 아래로 한칸 씩 이동시키기 N-2행 부터 옮기고 0번째 행 모두 0으로 바꾸기
-	private static void move() {
-		for (int i = N - 1; i >= 0; i--) {
-			for (int j = 0; j < M; j++) {
-				if (i == 0) {
-					game[0][j] = 0;
-					continue;
-				}
-				// 이동 후 성벽에 닿는 적의 수 빼주기
-				if (i == N - 1 && game[i][j] == 1) {
-					cntTotal--;
-				}
-				game[i][j] = game[i - 1][j];
-			}
 		}
 	}
 }
