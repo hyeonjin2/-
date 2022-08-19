@@ -12,7 +12,7 @@ public class Main {
 
 	static int N, M, D, cntKill, answer;
 	static int tmpN;
-	static List<Enemy>[] enemy;
+	static List<Enemy> enemy;
 	static int[][] map, game;
 	static int[] selected; // 조합으로 뽑인 궁수들의 인덱스
 
@@ -79,12 +79,13 @@ public class Main {
 
 	// 뽑은 궁수의 위치마다 적까지의 거리 계산후 공격
 	private static void calc() {
-		enemy = new ArrayList[3];
+		// 공격할 수 있는 적 찾기 -> 가장 가깝고 왼쪽에 있는 적 -> 열 값이 가장 작은 적
+		HashSet<Point> target = new HashSet<>();
 		for (int k = 0; k < 3; k++) {
 			// 궁수의 위치 point 배열에 저장
 			Point archer = new Point(tmpN, selected[k]);
 			// 적과의 거리 계산 후 공격할 수 있는 범위의 적 배열에 저장
-			enemy[k] = new ArrayList<Enemy>();
+			enemy = new ArrayList<Enemy>();
 			for (int i = 0; i < tmpN; i++) {
 				for (int j = 0; j < M; j++) {
 					// 배열의 값이 1이면 -> 적이 있으면
@@ -92,19 +93,15 @@ public class Main {
 						int distance = Math.abs(i - archer.x) + Math.abs(j - archer.y);
 						// 공격할 수 있는 범위 내의 적이면 리스트에 저장
 						if (distance <= D)
-							enemy[k].add(new Enemy(new Point(i, j), distance));
+							enemy.add(new Enemy(new Point(i, j), distance));
 					}
 				}
 			}
-		}
-		// 공격할 수 있는 적 찾기 -> 가장 가깝고 왼쪽에 있는 적 -> 열 값이 가장 작은 적
-		HashSet<Point> target = new HashSet<>();
-		for (int k = 0; k < 3; k++) {
 			int minC = M;
 			int minD = Integer.MAX_VALUE;
 			int idx = -1;
-			for (int i = 0, size = enemy[k].size(); i < size; i++) {
-				Enemy e = enemy[k].get(i);
+			for (int i = 0, size = enemy.size(); i < size; i++) {
+				Enemy e = enemy.get(i);
 				if (minD > e.distance) {
 					minD = e.distance;
 					minC = e.p.y;
@@ -117,7 +114,7 @@ public class Main {
 				}
 			}
 			if (idx >= 0) {
-				target.add(enemy[k].get(idx).p);
+				target.add(enemy.get(idx).p);
 			}
 		}
 		// 적 공격하기
