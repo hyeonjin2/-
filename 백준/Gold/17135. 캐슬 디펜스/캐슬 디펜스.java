@@ -1,126 +1,148 @@
-import java.awt.Point;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.StringTokenizer;
+import java.util.Scanner;
 
+// 궁수들의 위치를 어떻게 정해서 쏠거냐 - 조합
 public class Main {
 
-	static int N, M, D, cntKill, answer;
-	static int tmpN;
-	static List<Enemy> enemy;
-	static int[][] map, game;
-	static int[] selected; // 조합으로 뽑인 궁수들의 인덱스
+	static int N, M, D;
+	static int max; // 답
+	static int[] selected; // 조합. 3명의 궁수정보가 저장됨.
+	static List<Enemy> elist; // 적들의 정보
 
 	static class Enemy {
-		Point p;
-		int distance;
+		int x, y;
 
-		public Enemy(Point p, int distance) {
-			this.p = p;
-			this.distance = distance;
-		}
-
-		@Override
-		public String toString() {
-			return "Enemy [p=" + p + ", distance=" + distance + "]";
+		public Enemy(int x, int y) {
+			this.x = x;
+			this.y = y;
 		}
 	}
 
-	public static void main(String[] args) throws IOException {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		StringTokenizer st = new StringTokenizer(br.readLine());
-		N = Integer.parseInt(st.nextToken());
-		M = Integer.parseInt(st.nextToken());
-		D = Integer.parseInt(st.nextToken());
-
-		map = new int[N][M];
-		game = new int[N][M];
+	public static void main(String[] args) {
+		Scanner sc = new Scanner(System.in);
+		N = sc.nextInt(); // 가로 행
+		M = sc.nextInt(); // 세로 열
+		D = sc.nextInt(); // 유효거리
 		selected = new int[3];
 
+		elist = new ArrayList<>();
 		for (int i = 0; i < N; i++) {
-			st = new StringTokenizer(br.readLine());
 			for (int j = 0; j < M; j++) {
-				map[i][j] = Integer.parseInt(st.nextToken());
+				if (sc.nextInt() == 1)
+					elist.add(new Enemy(i, j));
 			}
 		}
-		comb(0, 0);
-		System.out.println(answer);
+		// 궁수들의 조합생성해서 계산 : 궁수위치(N+1번째, 열)
+		combi(0, 0);
+
+		System.out.println(max);
 	}
 
-	// 궁수의 위치 mC3으로 뽑기 [0,1,2,3,4] 뽑은 조합을 궁수의 인덱스로 사용
-	private static void comb(int cnt, int start) {
-		if (cnt == 3) { // 궁수는 3명을 둔다.
-			// 뽑은 궁수의 위치마다 적까지의 거리 계산하기
-			// 남은 적이 없을 때까지 반복해서 계산
-			for (int i = 0; i < N; i++) {
-				for (int j = 0; j < M; j++) {
-					game[i][j] = map[i][j];
-				}
-			}
-			cntKill = 0;
-			tmpN = N;
-			while (tmpN > 0) {
-				calc();
-				tmpN--;
-			}
-			answer = Math.max(answer, cntKill);
+	private static void combi(int cnt, int start) {
+		if (cnt == 3) {
+			fire();
 			return;
 		}
-		for (int i = start; i < M; i++) {
+		for (int i = start; i < M; i++) { // 열의 수 중에서
 			selected[cnt] = i;
-			comb(cnt + 1, i + 1);
+			combi(cnt + 1, i + 1);
 		}
 	}
 
-	// 뽑은 궁수의 위치마다 적까지의 거리 계산후 공격
-	private static void calc() {
-		// 공격할 수 있는 적 찾기 -> 가장 가깝고 왼쪽에 있는 적 -> 열 값이 가장 작은 적
-		HashSet<Point> target = new HashSet<>();
-		for (int k = 0; k < 3; k++) {
-			// 궁수의 위치 point 배열에 저장
-			Point archer = new Point(tmpN, selected[k]);
-			// 적과의 거리 계산 후 공격할 수 있는 범위의 적 배열에 저장
-			enemy = new ArrayList<Enemy>();
-			for (int i = tmpN - 1; i >= 0; i--) {
-				for (int j = 0; j < M; j++) {
-					// 궁수와의 거리 계산
-					int distance = Math.abs(i - archer.x) + Math.abs(j - archer.y);
-					// 배열의 값이 1이면 -> 적이 있으면
-					if (distance <= D && game[i][j] == 1) {
-						// 공격할 수 있는 범위 내의 적이면 리스트에 저장
-						enemy.add(new Enemy(new Point(i, j), distance));
-					}
+	// 궁수조합이 완성될 때마다 호출
+	private static void fire() {
+		List<Enemy> copy = new ArrayList<>();
+		for (Enemy e : elist) {
+			copy.add(new Enemy(e.x, e.y));
+		}
+
+		int killed = gameStart(copy, selected); // 이 궁수의 조합을 이용해서 공격
+		max = Math.max(max, killed);
+	}
+
+	// archers[] : 궁수들의 열값 정보(0,1,2) - 이 궁수의 조합을 이용해서 공격
+	private static int gameStart(List<Enemy> list, int[] archers) {
+		int cnt = 0; // 공격한 적의 수
+		while (list.size() != 0) { // 적이 한명이라도 있으면
+			// 3명의 궁수가 동시에 같은 적을 공격할 수도 있기 때문에 바로 공격하면 안되고 찜을 해놨다가 한번에 공격해야됨.
+			List<Enemy> tmp = new ArrayList<>();
+			for (int y : archers) {// y : 궁수들의 y값
+				int targetIndex = findNear(list, y); // y위치에 있는 궁수한테서 제일 가까운 적의 인덱스를 받음.
+				if (targetIndex >= 0) { // 공격할 적이 있다면
+					tmp.add(list.get(targetIndex)); // 임시 리스트에 저장
 				}
 			}
-			int minC = M;
-			int minD = Integer.MAX_VALUE;
-			int idx = -1;
-			for (int i = 0, size = enemy.size(); i < size; i++) {
-				Enemy e = enemy.get(i);
-				if (minD > e.distance) {
-					minD = e.distance;
-					minC = e.p.y;
-					idx = i;
-				} else if (minD == e.distance) {
-					if (minC > e.p.y) {
-						minC = e.p.y;
-						idx = i;
-					}
+			// 궁수 3명이 모두 tmp에 공격할 적의 정보를 저장한 후
+			// 공격
+			for (Enemy e : tmp) {
+				if (list.remove(e))
+					cnt++; // 공격당한 적의 수를 증가
+			}
+
+			// 적군이 움직임
+			// 공격당하지 않은 적들의 정보만 있는 리스트를 전달
+			enemyDown(list);
+		}
+		return cnt;
+	}
+
+	// 궁수의 위치(y)에서 가장 가까운 적을 찾아서 인덱스를 리턴
+	private static int findNear(List<Enemy> list, int y) {
+		int index = -1;
+		int minDistance = Integer.MAX_VALUE; // 적-궁수간 거리
+		int minColumn = Integer.MAX_VALUE; // 발견된 적의 열 값. 작은 값이 더 우선(더 왼쪽이니까)
+
+		for (int i = 0, size = list.size(); i < size; i++) { // 모든 적에 대해 조사
+			Enemy e = list.get(i);
+
+			// 거리 계산(궁수-적)
+			int d = (N - e.x) + Math.abs(y - e.y);
+			if (d > D)
+				continue;
+			if (d < minDistance) { // 기존 정보보다 더 짧은 거리의 적이 발견되면
+				minDistance = d;
+				minColumn = e.y;
+				index = i;
+			} else if (d == minDistance) { // 같은 거리의 적이 발견되면
+				if (e.y < minColumn) { // 누가 더 왼쪽이니?
+					minColumn = e.y;
+					index = i;
 				}
 			}
-			if (idx >= 0) {
-				target.add(enemy.get(idx).p);
-			}
 		}
-		// 적 공격하기
-		// 배열에서 1->0바꾸기
-		for (Point e : target) {
-			game[e.x][e.y] = 0;
-			cntKill++;
+		return index;
+	}
+
+	private static void enemyDown(List<Enemy> list) {
+		Iterator<Enemy> it = list.iterator();
+		while (it.hasNext()) { // 내용물이 있는 동안
+			Enemy e = it.next();
+			e.x++;
+			if (e.x == N)
+				it.remove();
 		}
+
+//		// 성벽에 닿는 적은 게임에서 제외됨
+//		for (int i = list.size() - 1; i >= 0; i--) {
+//			Enemy e = list.get(i);
+//			e.x++;
+//			if (e.x == N)
+//				list.remove(i);
+//		}
 	}
 }
+/*
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
