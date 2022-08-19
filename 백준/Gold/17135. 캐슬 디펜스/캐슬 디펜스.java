@@ -10,7 +10,7 @@ import java.util.StringTokenizer;
 
 public class Main {
 
-	static int N, M, D, Cnt, cntTotal, cntKill, answer;
+	static int N, M, D, cntKill, answer;
 	static int tmpN;
 	static List<Enemy>[] enemy;
 	static int[][] map, game;
@@ -46,9 +46,6 @@ public class Main {
 			st = new StringTokenizer(br.readLine());
 			for (int j = 0; j < M; j++) {
 				map[i][j] = Integer.parseInt(st.nextToken());
-				// 적의 수 파악해두기
-				if (map[i][j] == 1)
-					Cnt++;
 			}
 		}
 		comb(0, 0);
@@ -65,10 +62,9 @@ public class Main {
 					game[i][j] = map[i][j];
 				}
 			}
-			cntTotal = Cnt;
 			cntKill = 0;
 			tmpN = N;
-			while (cntTotal > 0 && tmpN > 0) {
+			while (tmpN > 0) {
 				calc();
 				tmpN--;
 			}
@@ -129,7 +125,6 @@ public class Main {
 		for (Point e : target) {
 			game[e.x][e.y] = 0;
 			cntKill++;
-			cntTotal--;
 		}
 	}
 }
