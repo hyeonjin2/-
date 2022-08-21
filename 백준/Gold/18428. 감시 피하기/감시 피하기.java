@@ -14,7 +14,6 @@ public class Main {
 	static boolean notFind;
 	static char[][] map;
 	static char[][] copy;
-	static boolean[][] visited;
 	static Point[] obstacles;
 	static List<Point> teachers;
 	static List<Point> others;
@@ -78,7 +77,6 @@ public class Main {
 			copy[tmp.x][tmp.y] = 'O';
 		}
 		// 선생님들 별로 dfs 학생 탐색
-		visited = new boolean[N][N];
 		for (int i = 0, size = teachers.size(); i < size; i++) {
 			bfs(teachers.get(i));
 		}
@@ -88,7 +86,6 @@ public class Main {
 	private static void bfs(Point start) {
 		Queue<Point> queue = new ArrayDeque<>();
 		queue.offer(start);
-		visited[start.x][start.y] = true;
 		while (!queue.isEmpty()) {
 			Point cur = queue.poll();
 			if (copy[cur.x][cur.y] == 'S')
@@ -104,7 +101,6 @@ public class Main {
 						Cnt++;
 						break;
 					}
-					visited[next.x][next.y] = true;
 					next = new Point(next.x + dx[d], next.y + dy[d]);
 				}
 			}
