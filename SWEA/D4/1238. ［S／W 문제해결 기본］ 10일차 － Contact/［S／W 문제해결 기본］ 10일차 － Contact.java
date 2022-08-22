@@ -28,6 +28,7 @@ public class Solution {
 				int to = Integer.parseInt(st.nextToken());
 				matrix[from][to] = 1;
 			}
+			// 동시에 통화 가능하므로 bfs구현
 			bfs(start);
 			sb.append("#").append(tc).append(" ").append(Ans).append("\n");
 		}
@@ -40,6 +41,7 @@ public class Solution {
 		visited = new boolean[101];
 		visited[start] = true;
 		while (!queue.isEmpty()) {
+			// 가장 마지막에 연락한 사람 중 가장 큰 번호를 구해야하므로 같은 레벨끼리 검사
 			int size = queue.size();
 			Ans = 0;
 			for (int k = 0; k < size; k++) {
