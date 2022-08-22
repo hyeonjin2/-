@@ -7,8 +7,18 @@ import java.util.StringTokenizer;
 
 public class Solution {
 
+	static class Node {
+		int to;
+		Node next;
+
+		public Node(int to, Node next) {
+			this.to = to;
+			this.next = next;
+		}
+	}
+
 	static int Ans;
-	static int[][] matrix;
+	static Node[] adjList;
 	static boolean[] visited;
 
 	public static void main(String[] args) throws IOException {
@@ -21,12 +31,12 @@ public class Solution {
 			// 시작점
 			int start = Integer.parseInt(st.nextToken());
 			// 배열 초기화
-			matrix = new int[101][101];
+			adjList = new Node[101];
 			st = new StringTokenizer(br.readLine());
 			for (int i = 0; i < N / 2; i++) {
 				int from = Integer.parseInt(st.nextToken());
 				int to = Integer.parseInt(st.nextToken());
-				matrix[from][to] = 1;
+				adjList[from] = new Node(to, adjList[from]);
 			}
 			// 동시에 통화 가능하므로 bfs구현
 			bfs(start);
@@ -47,14 +57,13 @@ public class Solution {
 			for (int k = 0; k < size; k++) {
 				int cur = queue.poll();
 				Ans = Math.max(Ans, cur);
-				for (int i = 0; i < 101; i++) {
-					if (!visited[i] && matrix[cur][i] != 0) {
-						visited[i] = true;
-						queue.offer(i);
+				for (Node tmp = adjList[cur]; tmp != null; tmp = tmp.next) {
+					if (!visited[tmp.to]) {
+						visited[tmp.to] = true;
+						queue.offer(tmp.to);
 					}
 				}
 			}
 		}
 	}
-
 }
