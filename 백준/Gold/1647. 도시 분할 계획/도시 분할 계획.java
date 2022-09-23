@@ -48,13 +48,13 @@ public class Main {
 		Arrays.sort(edgeList);
 
 		int sum = 0;
-		int max = Integer.MIN_VALUE;
+		int max = 0;
 		for (int i = 0; i < M; i++) {
 			int from = edgeList[i].from;
 			int to = edgeList[i].to;
 			if (union(from, to)) {
-				sum += edgeList[i].weight;
-				max = Math.max(max, edgeList[i].weight);
+				max = edgeList[i].weight;
+				sum += max;
 			}
 		}
 		System.out.println(sum - max);
