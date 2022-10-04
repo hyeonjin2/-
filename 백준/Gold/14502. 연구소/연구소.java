@@ -4,141 +4,117 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
+// 연구소
 public class Main {
 
 	static int N, M, Ans;
-	static int[][] map;
-	static int[][] copy;
-	static List<Point> area;
-	static List<Point> viruses;
+	static int[][] map, copy;
+	static List<Point> list;
 	static Point[] walls;
-
-	// 바이러스 4방 확산 델타 배열 상,하,좌,우
-	static int[] dx = { -1, 1, 0, 0 };
-	static int[] dy = { 0, 0, -1, 1 };
+	static List<Point> viruses;
 
 	public static void main(String[] args) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		StringTokenizer st = new StringTokenizer(br.readLine());
-		// 배열 크기 입력 받기
 		N = Integer.parseInt(st.nextToken());
 		M = Integer.parseInt(st.nextToken());
 
-		// 배열 초기화
 		map = new int[N][M];
-		viruses = new ArrayList<>(); // 바이러스의 위치 정보를 담을 리스트
-		area = new ArrayList<>(); // 벽이 세워질 수 있는 위치 정보를 담을 리스트
+
+		list = new ArrayList<>();
+		viruses = new ArrayList<>();
 		for (int i = 0; i < N; i++) {
 			st = new StringTokenizer(br.readLine());
 			for (int j = 0; j < M; j++) {
-				int num = Integer.parseInt(st.nextToken());
-				map[i][j] = num;
-				if (num == 2) {
+				map[i][j] = Integer.parseInt(st.nextToken());
+				if (map[i][j] == 0)
+					list.add(new Point(i, j));
+				if (map[i][j] == 2) {
 					viruses.add(new Point(i, j));
-				} else if (num == 0) {
-					area.add(new Point(i, j));
 				}
 			}
 		}
-		// 벽 3개를 세우는 경우 조합으로 구하기
+		// 벽 세우기
 		walls = new Point[3];
+		copy = new int[N][M];
 		comb(0, 0);
-
 		System.out.println(Ans);
 	}
 
-	// 0~7 0~7 -> (0,1) (2,6) (3,1) 과 같이 조합을 뽑아야함.
+	// 벽을 세울수 있는 곳에 벽 3개 세우기
 	private static void comb(int cnt, int start) {
 		if (cnt == 3) {
-			// 벽을 세우면 바이러스가 퍼져나간 후의 안전구역 구하기
-			search();
-			// 안전구역 크기 구하기
-			Ans = Math.max(Ans, calc());
+			// 벽을 세우기
+			copy(copy, map);
+			setWalls();
+			// 바이러스 퍼져나가기
+			bfs();
+			// 안전지역 개수 세기
+			int result = calc();
+			Ans = Math.max(Ans, result);
 			return;
 		}
-		for (int i = start, size = area.size(); i < size; i++) {
-			walls[cnt] = area.get(i);
+		for (int i = start, size = list.size(); i < size; i++) {
+			walls[cnt] = list.get(i);
 			comb(cnt + 1, i + 1);
 		}
 	}
 
-	private static void search() {
-		// 배열 복사해두기
-		copy = new int[N][M];
-		for (int i = 0; i < N; i++) {
-			for (int j = 0; j < M; j++) {
-				copy[i][j] = map[i][j];
-			}
-		}
-		// copy된 배열에 벽 세우기
+	private static void setWalls() {
 		for (int i = 0; i < 3; i++) {
-			Point tmp = walls[i];
-			copy[tmp.x][tmp.y] = 1;
-		}
-		// 바이러스가 퍼질 수 있는 범위까지 퍼지기
-		for (int i = 0, size = viruses.size(); i < size; i++) {
-			bfs(viruses.get(i));
+			Point wall = walls[i];
+			copy[wall.x][wall.y] = 1;
 		}
 	}
 
-	// 바이러스가 4방으로 퍼지는 것을 copy에 담을 메소드
-	private static void bfs(Point start) {
-		Queue<Point> queue = new ArrayDeque<>();
-//		System.out.println(start);
-		boolean[][] visited = new boolean[N][M];
-		visited[start.x][start.y] = true;
-		queue.offer(start);
+	static int[] dx = { -1, 1, 0, 0 };
+	static int[] dy = { 0, 0, -1, 1 };
 
+	// 바이러스가 퍼져나가는 메소드
+	private static void bfs() {
+		boolean[][] visited = new boolean[N][M];
+		Queue<Point> queue = new ArrayDeque<>();
+		for (int i = 0, size = viruses.size(); i < size; i++) {
+			Point virus = viruses.get(i);
+			visited[virus.x][virus.y] = true;
+			queue.offer(virus);
+		}
 		while (!queue.isEmpty()) {
-			Point curr = queue.poll();
+			Point cur = queue.poll();
+			int x = cur.x;
+			int y = cur.y;
 			for (int d = 0; d < 4; d++) {
-				Point next = new Point(curr.x + dx[d], curr.y + dy[d]);
-				// 배열의 범위인지 확인
-				if (next.x < 0 || next.x >= N || next.y < 0 || next.y >= M)
+				int nx = x + dx[d];
+				int ny = y + dy[d];
+				if (nx < 0 || nx >= N || ny < 0 || ny >= M || visited[nx][ny] || copy[nx][ny] == 1)
 					continue;
-				// 방문한 적이 있는 곳이면 확산 x
-				if (visited[next.x][next.y])
-					continue;
-				// 0인 구역이면 바이러스 확산
-				if (copy[next.x][next.y] == 0) {
-					visited[next.x][next.y] = true;
-					copy[next.x][next.y] = 2;
-					queue.offer(next);
-				}
+				visited[nx][ny] = true;
+				copy[nx][ny] = 2;
+				queue.offer(new Point(nx, ny));
 			}
 		}
 	}
 
 	private static int calc() {
-		int sum = 0;
+		int cnt = 0;
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < M; j++) {
 				if (copy[i][j] == 0)
-					sum++;
+					cnt++;
 			}
 		}
-		return sum;
+		return cnt;
+	}
+
+	private static void copy(int[][] copyed, int[][] map) {
+		for (int i = 0; i < N; i++) {
+			for (int j = 0; j < M; j++) {
+				copyed[i][j] = map[i][j];
+			}
+		}
 	}
 }
-/*
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- * 
- */
