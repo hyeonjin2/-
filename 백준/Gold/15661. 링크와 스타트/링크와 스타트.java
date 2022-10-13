@@ -40,6 +40,8 @@ public class Main {
 				else
 					llist.add(i);
 			}
+			if (slist.size() == 0 || llist.size() == 0)
+				return;
 			int score = calc(slist, llist);
 			Ans = Math.min(Ans, score);
 			return;
