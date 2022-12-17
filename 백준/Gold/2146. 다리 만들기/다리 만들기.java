@@ -1,4 +1,3 @@
-import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -11,7 +10,7 @@ public class Main {
 
 	static int N, groupInd, ans;
 	static int[][] map;
-	static int[][] group;
+	static boolean[][] visited;
 
 	static class Point {
 		int x;
@@ -31,7 +30,6 @@ public class Main {
 
 		N = Integer.parseInt(br.readLine());
 		map = new int[N][N];
-		group = new int[N][N];
 
 		StringTokenizer st;
 		for (int i = 0; i < N; i++) {
@@ -41,10 +39,11 @@ public class Main {
 			}
 		}
 		// 그룹 짓기
+		groupInd = 1;
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < N; j++) {
 				// 바다가 아니고, 그룹이 없는 상태면 새로운 그룹 만들러 가기
-				if (map[i][j] != 0 && group[i][j] == 0) {
+				if (map[i][j] == 1) {
 					setGroup(i, j, ++groupInd);
 				}
 			}
@@ -53,7 +52,7 @@ public class Main {
 		ans = Integer.MAX_VALUE;
 		for (int i = 0; i < N; i++) {
 			for (int j = 0; j < N; j++) {
-				if (group[i][j] != 0) {
+				if (map[i][j] > 2) {
 					getBridge(i, j);
 				}
 			}
@@ -67,27 +66,31 @@ public class Main {
 	private static void getBridge(int i, int j) {
 		Queue<Point> queue = new ArrayDeque<>();
 		queue.offer(new Point(i, j, 0));
-		boolean[][] visited = new boolean[N][N];
+		visited = new boolean[N][N];
 		visited[i][j] = true;
-		int curGroup = group[i][j];
+		int curGroup = map[i][j];
 
 		while (!queue.isEmpty()) {
 			Point cur = queue.poll();
 			int x = cur.x;
 			int y = cur.y;
 			int cnt = cur.cnt;
+			if (cnt > ans) {
+				continue;
+			}
+			if (map[x][y] != 0 && map[x][y] != curGroup) {
+				ans = Math.min(cnt - 1, ans);
+				return;
+			}
+
 			for (int d = 0; d < 4; d++) {
 				int nx = x + dx[d];
 				int ny = y + dy[d];
-				if (nx < 0 || nx >= N || ny < 0 || ny >= N || visited[nx][ny] || group[nx][ny] == curGroup) {
+				if (nx < 0 || nx >= N || ny < 0 || ny >= N || visited[nx][ny] || map[nx][ny] == curGroup) {
 					continue;
 				}
 				visited[nx][ny] = true;
-				if (map[nx][ny] == 0) {
-					queue.offer(new Point(nx, ny, cnt + 1));
-				} else {
-					ans = Math.min(cnt, ans);
-				}
+				queue.offer(new Point(nx, ny, cnt + 1));
 			}
 		}
 
@@ -96,7 +99,7 @@ public class Main {
 	private static void setGroup(int i, int j, int groupInd) {
 		Queue<Point> queue = new ArrayDeque<>();
 		queue.offer(new Point(i, j, 0));
-		group[i][j] = groupInd;
+		map[i][j] = groupInd;
 
 		while (!queue.isEmpty()) {
 			Point cur = queue.poll();
@@ -105,13 +108,24 @@ public class Main {
 			for (int d = 0; d < 4; d++) {
 				int nx = x + dx[d];
 				int ny = y + dy[d];
-				if (nx < 0 || nx >= N || ny < 0 || ny >= N || map[nx][ny] == 0 || group[nx][ny] != 0) {
+				if (nx < 0 || nx >= N || ny < 0 || ny >= N || map[nx][ny] == 0 || map[nx][ny] > 1) {
 					continue;
 				}
-				group[nx][ny] = groupInd;
+				map[nx][ny] = groupInd;
 				queue.offer(new Point(nx, ny, 0));
 			}
 		}
+	}
+
+	public static void print(int[][] arr) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < arr.length; i++) {
+			for (int j = 0; j < arr.length; j++) {
+				sb.append(arr[i][j]).append(" ");
+			}
+			sb.append("\n");
+		}
+		System.out.println(sb);
 	}
 
 }
