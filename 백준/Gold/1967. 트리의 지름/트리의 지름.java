@@ -19,7 +19,6 @@ public class Main {
   }
 
   static int max;
-  static int[] weight;
 
   static boolean[] visited;
   static Node[] adjList;
@@ -42,16 +41,11 @@ public class Main {
       adjList[to] = new Node(from, weight, adjList[to]);
     }
     // 노드 별로 최대 길이 구하기 -> DFS
-    int ans = 0;
-    weight = new int[n + 1];
     for (int i = 1; i <= n; i++) {
-      max = 0;
       visited = new boolean[n + 1];
       dfs(i, 0);
-      weight[i] = max;
-      ans = Math.max(ans, weight[i]);
     }
-    System.out.println(ans);
+    System.out.println(max);
   }
 
   private static void dfs(int cur, int length) {
