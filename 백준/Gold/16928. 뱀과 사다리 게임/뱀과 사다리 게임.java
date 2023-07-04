@@ -13,7 +13,7 @@ public class Main {
 	static int N, M, answer;
 
 	// 사다리, 뱀 정보를 담을 배열 (하나의 칸이 사다리와 뱀을 동시에 가질 수 없으므로 하나의 배열로 관리
-	static List<Point> move;
+	static int[] move;
 
 	public static void main(String[] args) throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -22,7 +22,7 @@ public class Main {
 		N = Integer.parseInt(st.nextToken());
 		M = Integer.parseInt(st.nextToken());
 
-		move = new ArrayList<>();
+		move = new int[101];
 
 		// 사다리 정보 저장
 		for (int i = 0; i < N + M; i++) {
@@ -30,8 +30,7 @@ public class Main {
 			int x = Integer.parseInt(st.nextToken());
 			int y = Integer.parseInt(st.nextToken());
 
-			Point p = new Point(x, y);
-			move.add(p);
+			move[x] = y;
 		}
 
 		bfs();
@@ -62,15 +61,14 @@ public class Main {
 					queue.offer(new Point(next, count + 1));
 					break;
 				}
+				
 				// 사다리 또는 뱀이 있는 칸에 도착했는지 확인
-				for (int m = 0; m < move.size(); m++) {
-					Point p = move.get(m);
-
-					// 사다리 또는 뱀이 있는 칸이라면 이동
-					if (next == p.x) {
-						next = p.y;
-					}
+				if(move[next]!=0) {
+					next = move[next];
+					
 				}
+				
+				
 				if (!visited[next]) {
 					queue.offer(new Point(next, count + 1));
 					visited[next] = true;
