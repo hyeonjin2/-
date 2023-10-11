@@ -1,7 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.StringTokenizer;
 
 // 문자열 교집합
@@ -17,24 +17,18 @@ public class Solution {
 			int M = Integer.parseInt(st.nextToken());
 
 			// 첫번째 문자열 입력받기
-			HashMap<String, Integer> hash1 = new HashMap<>();
+			HashSet<String> hash1 = new HashSet<>();
 			st = new StringTokenizer(br.readLine());
 			for (int i = 0; i < N; i++) {
-				hash1.put(st.nextToken(), 1);
+				hash1.add(st.nextToken());
 			}
 
 			// 두번째 문자열 입력받기
-			HashMap<String, Integer> hash2 = new HashMap<>();
+			int result = 0;
 			st = new StringTokenizer(br.readLine());
 			for (int i = 0; i < M; i++) {
-				hash2.put(st.nextToken(), 1);
-			}
-
-			int result = 0;
-			for (String str : hash1.keySet()) {
-				if (hash2.get(str) != null) {
+				if (hash1.contains(st.nextToken()))
 					result++;
-				}
 			}
 
 			System.out.println("#" + tc + " " + result);
