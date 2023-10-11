@@ -1,7 +1,8 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.PriorityQueue;
+import java.util.ArrayList;
+import java.util.List;
 
 // 염라대왕의 이름 정렬
 public class Solution {
@@ -11,20 +12,26 @@ public class Solution {
 		int T = Integer.parseInt(br.readLine());
 		for (int tc = 1; tc <= T; tc++) {
 			int N = Integer.parseInt(br.readLine());
-			PriorityQueue<String> heap = new PriorityQueue<String>((e1, e2) -> {
+			List<String> list = new ArrayList<>();
+//			PriorityQueue<String> heap = new PriorityQueue<String>((e1, e2) -> {
+//				if (e1.length() == e2.length()) {
+//					return e1.compareTo(e2);
+//				}
+//				return e1.length() - e2.length();
+//			});
+			for (int i = 0; i < N; i++) {
+				list.add(br.readLine());
+			}
+
+			list.sort((e1, e2) -> {
 				if (e1.length() == e2.length()) {
 					return e1.compareTo(e2);
 				}
 				return e1.length() - e2.length();
 			});
-			for (int i = 0; i < N; i++) {
-				heap.add(br.readLine());
-			}
-
 			System.out.printf("#%d\n", tc);
 			String prev = "";
-			while (!heap.isEmpty()) {
-				String now = heap.poll();
+			for (String now : list) {
 				if (!now.equals(prev))
 					System.out.println(now);
 				prev = now;
